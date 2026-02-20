@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Musafir Calculator</title>
+    <style>
+        :root {
+            --primary-color: #10b981;
+            --bg-color: #f3f4f6;
+            --card-bg: #ffffff;
+            --text-main: #1f2937;
+            --text-muted: #6b7280;
+        }
+
+        * {
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .app-container {
+            background-color: var(--card-bg);
+            border-radius: 24px;
+            padding: 30px;
+            width: 100%;
+            max-width: 400px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+        }
+
+        h2 {
+            text-align: center;
+            margin-top: 0;
+            font-weight: 700;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        /* NEW: Flexbox header to put Label and GPS button on the same line */
+        .input-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        label {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-muted);
+        }
+
+        /* NEW: Styling for the small GPS text button */
+        .gps-btn {
+            background: none;
+            border: none;
+            color: var(--primary-color);
+            font-size: 13px;
+            font-weight: 700;
+            padding: 0;
+            cursor: pointer;
+            margin: 0;
+            width: auto;
+        }
+
+        .gps-btn:hover {
+            text-decoration: underline;
+            background: none;
+            color: #059669;
+        }
+
+        input {
+            width: 100%;
+            padding: 14px;
+            border: 1px solid #e5e7eb;
+            border-radius: 12px;
+            font-size: 16px;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        input:focus {
+            border-color: var(--primary-color);
+        }
+
+        .main-btn {
+            width: 100%;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 16px;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            margin-top: 10px;
+        }
+
+        .main-btn:hover {
+            background-color: #059669;
+        }
+
+        .main-btn:disabled {
+            background-color: #9ca3af;
+            cursor: not-allowed;
+        }
+
+        #result-card {
+            margin-top: 25px;
+            padding: 20px;
+            border-radius: 12px;
+            text-align: center;
+            display: none;
+            animation: fadeIn 0.3s ease-in-out;
+        }
+
+        .success {
+            background-color: #d1fae5;
+            color: #065f46;
+            border: 1px solid #34d399;
+        }
+
+        .fail {
+            background-color: #fee2e2;
+            color: #991b1b;
+            border: 1px solid #f87171;
+        }
+
+        .distance-display {
+            font-size: 32px;
+            font-weight: 800;
+            margin: 10px 0;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="app-container">
+        <h2>Musafir Calculator 🚗</h2>
+        
+        <div class="input-group">
+            <div class="input-header">
+                <label for="origin">Starting Point</label>
+                <button type="button" class="gps-btn" id="gps-text-btn" onclick="getLocation()">📍 Auto-Detect</button>
+            </div>
+            <input type="text" id="origin" placeholder="Enter city or tap Auto-Detect">
+        </div>
+
+        <div class="input-group">
+            <label for="destination">Destination</label>
+            <input type="text" id="destination" placeholder="e.g., Kuantan, Pahang">
+        </div>
+
+        <button class="main-btn" id="calc-btn" onclick="checkDistance()">Calculate Distance</button>
+
+        <div id="result-card">
+            <div id="distance-val" class="distance-display">-- km</div>
+            <div id="message-val"></div>
+        </div>
+    </div>
+
+    <script>
+        // NEW: Function to grab the browser's GPS
+        function getLocation() {
+            const originInput = document.getElementById('origin');
+            const gpsBtn = document.getElementById('gps-text-btn');
+
+            if (navigator.geolocation) {
+                gpsBtn.innerText = "Locating... ⏳";
+                
+                navigator.geolocation.getCurrentPosition(
+                    (position) => {
+                        // Success: Fill the input with exact Latitude & Longitude
+                        const lat = position.coords.latitude;
+                        const lng = position.coords.longitude;
+                        originInput.value = `${lat},${lng}`;
+                        gpsBtn.innerText = "📍 Detected!";
+                    },
+                    (error) => {
+                        // Failure: User denied permission or GPS is off
+                        alert("Unable to get location. Please allow location permissions in your browser.");
+                        gpsBtn.innerText = "📍 Auto-Detect";
+                    },
+                    { enableHighAccuracy: true }
+                );
+            } else {
+                alert("Geolocation is not supported by your browser.");
+            }
+        }
+
+        // ORIGINAL: The distance calculation function
+        async function checkDistance() {
+            const origin = document.getElementById('origin').value;
+            const destination = document.getElementById('destination').value;
+            const btn = document.getElementById('calc-btn');
+            const resultCard = document.getElementById('result-card');
+            
+            if (!origin || !destination) {
+                alert("Please enter both locations!");
+                return;
+            }
+
+            btn.disabled = true;
+            btn.innerText = "Calculating Route...";
+            resultCard.style.display = 'none';
+
+            try {
+                const response = await fetch('/api/check-musafir', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ origin, destination })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    document.getElementById('distance-val').innerText = `${data.distanceKm} km`;
+                    document.getElementById('message-val').innerText = data.message;
+                    
+                    resultCard.className = data.isEligible ? 'success' : 'fail';
+                    resultCard.style.display = 'block';
+                } else {
+                    alert(data.error || "Something went wrong.");
+                }
+            } catch (error) {
+                alert("Failed to connect to the server.");
+            } finally {
+                btn.disabled = false;
+                btn.innerText = "Calculate Distance";
+            }
+        }
+
+        window.onload = function() {
+            const destInput = document.getElementById('destination');
+            // Restrict suggestions to Malaysia to make it faster and more accurate
+            const autocomplete = new google.maps.places.Autocomplete(destInput, {
+                componentRestrictions: { country: "my" } 
+            });
+        };
+    </script>
+    <script async src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBE9ho5XNIK7qBGtDlbLojzQi3GL5s2btk&libraries=places"></script>
+</body>
+</html>
