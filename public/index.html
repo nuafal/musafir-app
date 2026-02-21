@@ -247,15 +247,37 @@
                 btn.innerText = "Calculate Distance";
             }
         }
+// NEW: Fetch the key from the backend and load Google Maps dynamically
+        async function loadGoogleMaps() {
+            try {
+                // 1. Get the secret key from your backend
+                const response = await fetch('/api/maps-key');
+                const data = await response.json();
 
-        window.onload = function() {
+                // 2. Create the script tag using the secret key
+                const script = document.createElement('script');
+                script.src = `https://maps.googleapis.com/maps/api/js?key=${data.key}&libraries=places&callback=initPlaces`;
+                script.async = true;
+                script.defer = true;
+                
+                // 3. Inject it into the HTML
+                document.body.appendChild(script);
+            } catch (error) {
+                console.error("Failed to load Maps API key.");
+            }
+        }
+
+        // NEW: This function runs automatically once Google Maps finishes downloading
+        window.initPlaces = function() {
             const destInput = document.getElementById('destination');
-            // Restrict suggestions to Malaysia to make it faster and more accurate
             const autocomplete = new google.maps.places.Autocomplete(destInput, {
                 componentRestrictions: { country: "my" } 
             });
         };
+
+        // Start the process when the page opens
+        loadGoogleMaps();
+
     </script>
-    <script async src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBE9ho5XNIK7qBGtDlbLojzQi3GL5s2btk&libraries=places"></script>
 </body>
 </html>

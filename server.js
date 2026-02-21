@@ -55,6 +55,10 @@ app.post('/api/check-musafir', async (req, res) => {
     }
 });
 
+app.get('/api/maps-key', (req, res) => {
+    res.json({ key: process.env.GOOGLE_MAPS_API_KEY });
+});
+
 app.listen(PORT, () => {
     console.log(`🚀 Musafir App Backend running on http://localhost:${PORT}`);
 });
