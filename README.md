@@ -2,6 +2,8 @@
 
 A location-aware, containerized web application designed to calculate driving distances and determine eligibility for Jamak/Qasar prayers based on the 2 Marhalah (~82km) threshold in Malaysia.
 
+<img width="1919" height="946" alt="image" src="https://github.com/user-attachments/assets/48f0c16e-be2c-4936-9172-bf95bf644735" />
+
 ## 🏗️ Architecture & Tech Stack
 * **Frontend:** HTML5, CSS3, Vanilla JavaScript
 * **Backend:** Node.js, Express.js
